@@ -77,12 +77,78 @@ app.post("/register", function(req, res, next) {
             console.log("[MYSQL ERROR]", err);
             res.json("Registration error ", err);
           });
-          res.json("Registration Successful");
+          res.json({
+            code: "200",
+            message: "Registration Successful"
+          });
           if (err) {
             console.log(err);
           }
         }
       );
+    }
+  });
+});
+
+app.get("/users", (req, res, next) => {
+  con.query("SELECT * FROM User", (err, result) => {
+    if (!err) {
+      res.json(result);
+    } else {
+      res.json(err);
+    }
+  });
+});
+app.get("/users/:id", (req, res, next) => {
+  con.query("SELECT * FROM User", (err, result) => {
+    if (!err) {
+      //save the lenght of entries in the database to this variable.
+      var resultFromDB = result.length;
+
+      //validate it against the parameter entered by the user
+      con.query(
+        "SELECT * FROM User WHERE id =?",
+        [req.params.id],
+        (err, result) => {
+          if (req.params.id > resultFromDB) {
+            res.json("No user found with this id");
+            return;
+          } else {
+            res.json(result);
+          }
+        }
+      );
+    } else {
+      return;
+    }
+  });
+});
+
+app.delete("/users/:id", (req, res, next) => {
+  con.query("SELECT * FROM User", (err, result) => {
+    if (!err) {
+      //save the lenght of entries in the database to this variable.
+      var resultFromDB = result.length;
+      var userIdEntered = req.params.id;
+      if (userIdEntered > resultFromDB) {
+        res.json("No user found with this id");
+        return;
+      }
+      //validate it against the parameter entered by the user
+      con.query(
+        "DELETE FROM User WHERE id =?",
+        [userIdEntered],
+        (err, result) => {
+          if (!err) {
+            res.json("User deleted successfully");
+          } else {
+            res.json(err);
+            return;
+          }
+        }
+      );
+    } else {
+      return;
     }
   });
 });
